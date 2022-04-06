@@ -1,0 +1,173 @@
+CREATE DATABASE Bolnica_Lasarev
+GO
+USE Bolnica_Lasarev_Zaiceva
+GO
+CREATE TABLE Proceduree (
+  Code INTEGER PRIMARY KEY NOT NULL,
+  Name TEXT NOT NULL,
+  Cost REAL NOT NULL
+);
+ CREATE TABLE Affiliated_With (
+  Physician INTEGER FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL,
+  Department INTEGER FOREIGN KEY REFERENCES Department(DepartmentID) NOT NULL,
+  PrimaryAffiliation BIT NOT NULL,
+  PRIMARY KEY(Physician, Department)
+);
+CREATE TABLE Department (
+  DepartmentID INTEGER PRIMARY KEY NOT NULL,
+  Name VARCHAR(100) NOT NULL,
+  Head INTEGER FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL
+  );
+CREATE TABLE Physician (
+  EmployeeID INTEGER PRIMARY KEY NOT NULL,
+  Name VARCHAR(100) NOT NULL,
+  Position VARCHAR(100) NOT NULL,
+  SSN INTEGER NOT NULL
+); 
+CREATE TABLE Prescribes (
+  Physician INTEGER FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL,
+  Patient INTEGER FOREIGN KEY REFERENCES Patient(SSN) NOT NULL,
+  Medication INTEGER FOREIGN KEY REFERENCES Medication(Code) NOT NULL,
+  [Date] DATETIME NOT NULL,
+  Appointment INTEGER FOREIGN KEY REFERENCES Appointment(AppointmentID) NOT NULL,
+  Dose TEXT NOT NULL,
+  PRIMARY KEY(Physician, Patient, Medication, [Date])
+);
+CREATE TABLE Trained_in (
+  Physician INTEGER FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL,
+  Treatment INTEGER FOREIGN KEY REFERENCES Proceduree(Code) NOT NULL,
+  CertificationDate DATETIME NOT NULL,
+  CertificationExpires DATETIME NOT NULL,
+  PRIMARY KEY(Physician, Treatment)
+);
+ CREATE TABLE Room (
+  Number INTEGER PRIMARY KEY NOT NULL,
+  Type TEXT NOT NULL,
+  BlockFloor INTEGER NOT NULL,
+  BlockCode INTEGER NOT NULL,
+  Unavailable BIT NOT NULL,
+  FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block
+);
+CREATE TABLE Patient (
+  SSN INTEGER PRIMARY KEY NOT NULL,
+  Name TEXT NOT NULL,
+  Address TEXT NOT NULL,
+  Phone TEXT NOT NULL,
+  InsuranceID INTEGER NOT NULL,
+  PCP INTEGER FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL
+);
+CREATE TABLE Medication (
+  Code INTEGER PRIMARY KEY NOT NULL,
+  Name TEXT NOT NULL,
+  Brand TEXT NOT NULL,
+  Description TEXT NOT NULL
+);
+CREATE TABLE Undergoes (
+  Patient INTEGER FOREIGN KEY REFERENCES Patient(SSN) NOT NULL,
+  Proceduree INTEGER FOREIGN KEY REFERENCES Proceduree (Code) NOT NULL,
+  Stay INTEGER FOREIGN KEY REFERENCES Stay(StayID) NOT NULL,
+  [Date] DATETIME NOT NULL,
+  Physician INTEGER FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL,
+  AssistingNurse INTEGER FOREIGN KEY REFERENCES Nurse(EmployeeID)NOT NULL,
+  PRIMARY KEY(Patient, Proceduree, Stay, [Date])
+);
+CREATE TABLE Appointment (
+  AppointmentID INTEGER PRIMARY KEY NOT NULL,
+  Patient INTEGER FOREIGN KEY REFERENCES Patient(SSN) NOT NULL,
+  PrepNurse INTEGER FOREIGN KEY REFERENCES Nurse(EmployeeID) NOT NULL,
+  Physician INTEGER  FOREIGN KEY REFERENCES Physician(EmployeeID) NOT NULL,
+  Start_DT DATETIME NOT NULL,
+  End_DT DATETIME NOT NULL,
+  ExaminationRoom TEXT NOT NULL
+);
+CREATE TABLE Stay (
+  StayID INTEGER PRIMARY KEY NOT NULL,
+  Patient INTEGER FOREIGN KEY REFERENCES Patient(SSN) NOT NULL,
+  Room INTEGER FOREIGN KEY REFERENCES Room(Number) NOT NULL,
+  Start_DT DATETIME NOT NULL,
+  End_DT DATETIME NOT NULL
+);
+CREATE TABLE Nurse (
+  EmployeeID INTEGER PRIMARY KEY NOT NULL,
+  Name TEXT NOT NULL,
+  Position TEXT NOT NULL,
+  Registered BIT NOT NULL,
+  SSN INTEGER NOT NULL
+);
+CREATE TABLE [Block] (
+  [Floor] INTEGER NOT NULL,
+  Code INTEGER NOT NULL,
+  PRIMARY KEY([Floor], Code)
+);
+CREATE TABLE On_Call (
+  Nurse INTEGER FOREIGN KEY REFERENCES Nurse(EmployeeID) NOT NULL,
+  BlockFloor INTEGER NOT NULL,
+  BlockCode INTEGER NOT NULL,
+  Start_DT DATETIME NOT NULL,
+  End_DT DATETIME NOT NULL,
+  PRIMARY KEY(Nurse, BlockFloor, BlockCode, Start_DT, End_DT),
+  FOREIGN KEY(BlockFloor, BlockCode) REFERENCES Block
+);
+GO
+
+Use Bolnica_Lasarev
+
+INSERT Proceduree VALUES
+('6473','Клизма','1000'),
+('8293','Анализ крови','1500');
+GO
+INSERT Affiliated_With VALUES
+('393','6','0'),
+('746','1','0');
+GO
+INSERT Department VALUES
+('6','Платное отделение','393'),
+('1','Отдел приема больных','746');
+GO
+INSERT Physician VALUES
+('393','Евгений','Терапевт','1267'),
+('746','Георгий','Педиатр','6542');
+GO
+INSERT Prescribes VALUES
+('8475','839293','928','14.03.2021','620','12'),
+('8220','945768','236','26.09.2021','175','23');
+GO
+INSERT Trained_In VALUES
+('106','10','12.03.2001','12.12.2078'),
+('110','50','11.03.2000','11.12.2077');
+GO
+INSERT Room VALUES
+('103','Кабинет','42','65','0'),
+('216','Кабинет','26','82','0');
+GO
+INSERT Patient VALUES
+('827','Егор','Ул.Егорова д16','88005553535','6374','393'),
+('647','Кирилл','Ул Правды д8','89201976567','8293','746');
+GO
+INSERT Medication VALUES
+('210','Коперенева','Россия','Таблетки от давления'),
+('832','Глибомет','Россия','Таблетки от сахарного диабета');
+GO
+INSERT Undergoes VALUES
+('1','345','9:00','21.06.2001','106','14'),
+('2','173','13:00','15.03.1999','623','35');
+GO
+INSERT Appointment VALUES
+('9','1','13','116','12.03.2001','12.03.2010','423'),
+('4','6','50','110','12.03.2003','12.03.2006','964');
+GO
+INSERT Stay VALUES
+('16','1','18','13:00','14:00'),
+('20','4','10','9:00','12:00');
+GO
+INSERT Nurse VALUES
+('19','Екатерина','медсестра','8190','18'),
+('21','Мария','медсестра','8473','62');
+GO
+INSERT [Block] VALUES
+('92','24'),
+('18','10');
+GO
+INSERT On_Call VALUES
+('13','92','24','10:00','13:00'),
+('50','18','10','9:30','12:00');
